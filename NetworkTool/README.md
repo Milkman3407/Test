@@ -11,6 +11,10 @@ This repo now supports that flow:
 - The app auto-relaunches itself with elevation if needed.
 - The packaged `.exe` includes a UAC admin manifest.
 
+
+## Working in small parts
+A staged plan is available in `IMPLEMENTATION_PLAN.md` so development can be reviewed incrementally.
+
 ## What this tool does
 This tool provides a simple, non-technical UI for selecting a network adapter and switching between:
 - **DHCP (automatic IP/DNS)**
