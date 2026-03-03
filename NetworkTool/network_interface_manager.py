@@ -87,7 +87,7 @@ class NetworkManagerApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Network Interface Manager")
-        self.root.geometry("760x460")
+        self.root.geometry("800x500")
 
         self.adapters: list[NetworkAdapter] = []
 
@@ -149,6 +149,9 @@ class NetworkManagerApp:
         ttk.Button(actions, text="Open Legacy Adapter Window", command=self.open_adapter_settings).pack(
             side=tk.LEFT, padx=8
         )
+        ttk.Button(actions, text="Revert Selected to DHCP", command=self.revert_selected_to_dhcp).pack(
+            side=tk.RIGHT, padx=(0, 8)
+        )
         ttk.Button(actions, text="Apply Configuration", command=self.apply_configuration).pack(side=tk.RIGHT)
 
         self.status = ttk.Label(frame, text="", foreground="#1f2937")
@@ -192,6 +195,42 @@ class NetworkManagerApp:
         else:
             self.set_status("Opened legacy Network Connections window.")
 
+
+    def apply_dhcp_configuration(self, name: str, *, show_success_dialog: bool) -> bool:
+        commands = [
+            ["netsh", "interface", "ip", "set", "address", f"name={name}", "source=dhcp"],
+            ["netsh", "interface", "ip", "set", "dns", f"name={name}", "source=dhcp"],
+        ]
+
+        for cmd in commands:
+            code, out, err = run_command(cmd)
+            if code != 0:
+                messagebox.showerror(
+                    "Configuration failed",
+                    f"Command failed:\n{' '.join(cmd)}\n\n{err or out}\n\nTry running this app as Administrator.",
+                )
+                return False
+
+        self.set_status(f"Successfully applied DHCP settings to '{name}'.")
+        if show_success_dialog:
+            messagebox.showinfo("Success", "Interface reverted to DHCP successfully.")
+        return True
+
+    def revert_selected_to_dhcp(self) -> None:
+        name = self.selected_interface_name()
+        if not name:
+            return
+
+        confirmed = messagebox.askyesno(
+            "Revert to DHCP",
+            f"Revert '{name}' to automatic DHCP IP/DNS settings?",
+        )
+        if not confirmed:
+            return
+
+        self.mode.set("dhcp")
+        self.apply_dhcp_configuration(name, show_success_dialog=True)
+
     def apply_configuration(self) -> None:
         name = self.selected_interface_name()
         if not name:
@@ -199,10 +238,9 @@ class NetworkManagerApp:
 
         mode = self.mode.get()
         if mode == "dhcp":
-            commands = [
-                ["netsh", "interface", "ip", "set", "address", f"name={name}", "source=dhcp"],
-                ["netsh", "interface", "ip", "set", "dns", f"name={name}", "source=dhcp"],
-            ]
+            self.apply_dhcp_configuration(name, show_success_dialog=True)
+            return
+
         else:
             ip = self.ip_entry.get().strip()
             subnet = self.subnet_entry.get().strip()
@@ -254,8 +292,8 @@ class NetworkManagerApp:
                 )
                 return
 
-        self.set_status(f"Successfully applied {mode.upper()} settings to '{name}'.")
-        messagebox.showinfo("Success", "Network settings were applied successfully.")
+        self.set_status(f"Successfully applied STATIC settings to '{name}'.")
+        messagebox.showinfo("Success", "Static IPv4 settings were applied successfully.")
 
 
 def main() -> None:

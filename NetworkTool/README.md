@@ -12,13 +12,12 @@ This repo now supports that flow:
 - The packaged `.exe` includes a UAC admin manifest.
 
 
-## Working in small parts
-A staged plan is available in `IMPLEMENTATION_PLAN.md` so development can be reviewed incrementally.
-
 ## What this tool does
 This tool provides a simple, non-technical UI for selecting a network adapter and switching between:
 - **DHCP (automatic IP/DNS)**
 - **Static IPv4 configuration**
+
+This Windows 11 build intentionally focuses on those two modes only (no saved profiles).
 
 It is designed for environments where users cannot change IP settings from the modern Settings app and must use legacy adapter workflows.
 
@@ -26,6 +25,7 @@ It is designed for environments where users cannot change IP settings from the m
 - Lists available network interfaces.
 - Lets user choose one interface from a table.
 - Applies DHCP settings quickly.
+- Includes a one-click **Revert Selected to DHCP** action for post-testing cleanup.
 - Applies static IP/subnet/gateway and optional DNS.
 - Includes shortcut button to open `Control Panel > Network Connections` (`ncpa.cpl`).
 - Automatically prompts for admin rights when required.
